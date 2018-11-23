@@ -1,2 +1,47 @@
 ---
 # tasks file for home-assistant
+
+- name: Update all packages on the system
+  package:
+    name: *
+    state: latest
+
+- name: Install home-assistant python dependencies
+  package:
+    name: {{item}}
+    state: present
+    with_items:
+      - python3
+      - python3-venv
+      - python3-pip
+  become: true
+
+- name: Create home-assistant user account
+  user:
+    name: homeassistant
+    groups: dialout,gpio
+  become: true
+
+- name: Create home-assistant install dir
+  file:
+    path: /srv/homeassistant
+    state: directory
+    owner: homeassistant
+    group: homeassistant
+  become: true
+
+- name: Create home-assistant virtualenv
+  pip:
+    name: "{{ item }}"
+    virtualenv: /srv/homeassistant
+    virtualenv-python: python3
+    with_items:
+      - wheel
+      - homeassistant
+
+- name: Put systemd service file in place
+  copy:
+    src: ../files/homeassistant.service
+    dest: /etc/systemd/system/home-assistant@homeassistant.service
+  notify: Reload systemd and restart home-assistant
+  become: true

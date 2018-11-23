@@ -1,2 +1,8 @@
 ---
 # handlers file for home-assistant
+- name: Reload systemd and restart home-assistant
+  systemd:
+    daemon_reload: true
+    name: home-assistant@homeassistant.service
+    state: restarted
+  become: true
